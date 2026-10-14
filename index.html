@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AEROLAB — Browser CFD Playground</title>
+<style>
+:root{color-scheme:dark;--bg:#080c12;--panel:#101722;--panel2:#0c121b;--line:#253244;--muted:#8ea0b8;--text:#edf4ff;--cyan:#62e5f4;--blue:#5b8cff;--orange:#ff9f69}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);border-radius:9px;background:#172231;color:var(--text);padding:9px 12px}button:hover{border-color:#53718f;background:#1c2b3d}button.primary{background:var(--cyan);color:#061217;border-color:var(--cyan);font-weight:750}button:disabled{opacity:.45;cursor:not-allowed}
+header{height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--line);background:#0b111a;gap:14px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:850;letter-spacing:.13em}.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--cyan),#547dff);display:grid;place-items:center;color:#07111a;font-weight:1000}
+.brand small{display:block;font-size:10px;letter-spacing:.17em;color:var(--muted);font-weight:600}.header-right{display:flex;align-items:center;gap:12px}.status{font-size:11px;color:#8ee8bf;letter-spacing:.08em}.dot{display:inline-block;width:7px;height:7px;background:#64e6a1;border-radius:50%;margin-right:6px}
+main{display:grid;grid-template-columns:270px minmax(0,1fr) 280px;gap:12px;padding:12px;min-height:calc(100vh - 66px)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden;min-width:0}.panel-head{padding:14px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.panel-head h2{margin:0;font-size:11px;letter-spacing:.15em;text-transform:uppercase}.muted{color:var(--muted)}.section{padding:15px;border-bottom:1px solid #202c3b}.section:last-child{border-bottom:0}.label{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:12px;color:#c9d6e8}.value{font-variant-numeric:tabular-nums;color:var(--cyan);font-weight:700}.control{margin-bottom:17px}.control:last-child{margin-bottom:0}input[type=range]{width:100%;accent-color:var(--cyan)}input[type=number],select{width:100%;background:#0b121c;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btnrow{display:flex;gap:8px}.btnrow button{flex:1}.hint{font-size:11px;color:var(--muted);line-height:1.5}.drop{border:1px dashed #3a526e;border-radius:10px;padding:16px 12px;text-align:center;background:#0b131e;transition:.15s}.drop.drag{border-color:var(--cyan);background:#112630}.drop strong{display:block;margin:6px 0}.drop input{display:none}.drop .symbol{font-size:25px;color:var(--cyan)}
+.workspace{display:flex;flex-direction:column;min-height:680px}.viewport-top{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);flex-wrap:wrap}.viewport-top .left,.viewport-top .right{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.chip{border:1px solid var(--line);border-radius:7px;padding:5px 8px;color:var(--muted);font-size:11px}.chip.active{color:var(--cyan);border-color:#34707b;background:#10242b}
+#viewport{position:relative;flex:1;min-height:420px;background:radial-gradient(ellipse at 50% 43%,#172638 0,#0a111a 55%,#080d14 100%);overflow:hidden}#viewport canvas{display:block;width:100%;height:100%}.overlay{position:absolute;pointer-events:none;top:14px;left:15px;font-size:10px;letter-spacing:.13em;color:#8ca4bf}.overlay.bottom{top:auto;bottom:14px;left:15px;letter-spacing:0}.viewport-drop{position:absolute;inset:12px;border:2px dashed var(--cyan);border-radius:12px;background:#08131bd9;display:none;place-items:center;text-align:center;font-size:18px;font-weight:700;pointer-events:none}.viewport-drop.show{display:grid}
+.bottom-bar{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);flex-wrap:wrap}
+.metric{padding:13px;border:1px solid var(--line);background:var(--panel2);border-radius:10px;margin-bottom:9px}.metric .name{font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}.metric .num{font-size:25px;line-height:1.3;font-weight:760;letter-spacing:-.04em;margin-top:4px}.metric .unit{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:0}.metric .sub{font-size:10px;color:var(--muted);margin-top:3px}.bar-label{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin:13px 0 6px}.bar{height:6px;background:#202c3a;border-radius:5px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));transition:width .25s}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:10px}.legend i{display:inline-block;width:13px;height:4px;border-radius:3px;margin-right:4px;vertical-align:middle}
+.notice{font-size:10px;line-height:1.55;color:#b6c2d2;background:#171e29;border:1px solid #303b4b;border-radius:8px;padding:10px;margin:12px 0 0}
+footer{padding:0 14px 14px;color:#687b93;font-size:10px;text-align:center}
+@media(max-width:1100px){main{grid-template-columns:240px minmax(0,1fr)}.right-panel{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.right-panel .panel-head{grid-column:1/-1}.right-panel .section{border:0}.right-panel .metric{margin:0}}
+@media(max-width:720px){header{padding:0 12px}.header-right .status{display:none}main{display:flex;flex-direction:column;padding:8px}.workspace{order:0;min-height:590px}.left-panel{order:1}.right-panel{order:2;display:block}.right-panel .section{border-bottom:1px solid var(--line)}.right-panel .metric{margin-bottom:9px}.viewport-top{align-items:flex-start}#viewport{min-height:400px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">A</div><div>AEROLAB<small>INTERACTIVE FLOW WORKBENCH</small></div></div>
+  <div class="header-right"><span class="status"><i class="dot"></i>LOCAL SESSION</span><button id="resetView">Reset view</button></div>
+</header>
+<main>
+  <aside class="panel left-panel">
+    <div class="panel-head"><h2>Model & conditions</h2><span class="muted">01</span></div>
+    <div class="section">
+      <div class="drop" id="drop">
+        <div class="symbol">↥</div><strong>Drop a 3D model here</strong>
+        <div class="hint">or browse your files</div>
+        <label for="fileInput"><span class="primary" style="display:inline-block;margin-top:12px;padding:8px 12px;border-radius:8px;background:var(--cyan);color:#061217;font-weight:750;cursor:pointer">Import model</span></label>
+        <input id="fileInput" type="file" accept=".glb,.gltf,.obj,.stl,.ply">
+        <div class="hint" style="margin-top:10px">GLB, glTF, OBJ, STL, PLY</div>
+      </div>
+      <p class="hint" id="modelName" style="margin:10px 0 0">Demo model loaded: streamlined test body</p>
+      <div class="notice">For easiest importing, use <b>.glb</b>. A .gltf file may need its companion texture/binary files alongside it; single-file GLB is recommended.</div>
+    </div>
+    <div class="section">
+      <div class="control"><div class="label"><label for="wind">Wind speed</label><span class="value" id="windOut">30 m/s</span></div><input id="wind" type="range" min="1" max="100" value="30"></div>
+      <div class="control"><div class="label"><label for="angle">Angle of attack</label><span class="value" id="angleOut">5°</span></div><input id="angle" type="range" min="-10" max="25" value="5"></div>
+      <div class="control"><div class="label"><label for="density">Air density</label><span class="value" id="densityOut">1.225 kg/m³</span></div><input id="density" type="range" min="0.8" max="1.4" value="1.225" step="0.005"></div>
+      <div class="control"><div class="label"><label for="area">Reference area</label><span class="value" id="areaOut">1.0 m²</span></div><input id="area" type="range" min="0.1" max="5" value="1" step="0.1"></div>
+      <div class="control"><div class="label"><label for="cd">Assumed drag coefficient (Cd)</label><span class="value" id="cdOut">0.30</span></div><input id="cd" type="range" min="0.05" max="1.5" value="0.3" step="0.01"></div>
+      <div class="control"><div class="label"><label for="cl">Assumed lift coefficient (Cl)</label><span class="value" id="clOut">0.60</span></div><input id="cl" type="range" min="-1" max="2" value="0.6" step="0.01"></div>
+    </div>
+    <div class="section">
+      <div class="btnrow"><button class="primary" id="runBtn">▶ Run flow</button><button id="pauseBtn">Ⅱ Pause</button></div>
+      <div class="btnrow" style="margin-top:8px"><button id="reseedBtn">↻ Reseed particles</button><button id="demoBtn">Load demo</button></div>
+      <p class="hint" style="margin:10px 0 0">Mouse: drag to orbit · scroll to zoom · right-drag to pan</p>
+    </div>
+  </aside>
+
+  <section class="panel workspace">
+    <div class="viewport-top">
+      <div class="left"><span class="chip active">3D VIEW</span><span class="chip">PARTICLE FLOW</span><span class="chip">LIVE ESTIMATE</span></div>
+      <div class="right"><button id="flowBtn">Hide flow</button><button id="wireBtn">Wireframe</button></div>
+    </div>
+    <div id="viewport">
+      <div class="overlay">AEROLAB / SCENE 01 <br><span style="color:#5e7894">PERSPECTIVE · METERS (APPROX.)</span></div>
+      <div class="overlay bottom" id="viewStatus">FLOW FIELD: ACTIVE · DEMO GEOMETRY</div>
+      <div class="viewport-drop" id="viewportDrop">Release to import 3D model</div>
+    </div>
+    <div class="bottom-bar"><span id="simStatus">● FLOW VISUALIZATION RUNNING</span><span>RENDERER: WEBGL / THREE.JS</span><span id="particleCount">PARTICLES: 900</span></div>
+  </section>
+
+  <aside class="panel right-panel">
+    <div class="panel-head"><h2>Live results</h2><span class="muted">02</span></div>
+    <div class="section">
+      <div class="metric"><div class="name">Dynamic pressure</div><div class="num"><span id="qOut">551.3</span> <span class="unit">Pa</span></div><div class="sub">½ × density × velocity²</div></div>
+      <div class="metric"><div class="name">Estimated drag</div><div class="num"><span id="dragOut">165.4</span> <span class="unit">N</span></div><div class="sub">q × Cd × reference area</div></div>
+      <div class="metric"><div class="name">Estimated lift</div><div class="num"><span id="liftOut">330.8</span> <span class="unit">N</span></div><div class="sub">q × Cl × reference area</div></div>
+      <div class="metric"><div class="name">Reynolds number</div><div class="num" id="reOut">2.04M</div><div class="sub">Approx. air viscosity: 1.81 × 10⁻⁵ Pa·s</div></div>
+    </div>
+    <div class="section">
+      <div class="label"><span>Flow speed</span><span class="value" id="flowSpeedLabel">30 m/s</span></div><div class="bar"><span id="speedBar"></span></div>
+      <div class="bar-label"><span>Angle of attack</span><span id="angleBarLabel">5°</span></div><div class="bar"><span id="angleBar"></span></div>
+      <div class="bar-label"><span>Reference area</span><span id="areaBarLabel">1.0 m²</span></div><div class="bar"><span id="areaBar"></span></div>
+      <div class="legend"><span><i style="background:#4f8cff"></i>Lower-speed visual</span><span><i style="background:#61e6ef"></i>Higher-speed visual</span></div>
+      <div class="notice"><b>Prototype limitation:</b> the moving particles are a visual effect, not a numerical CFD solution. Lift and drag use your chosen coefficients; they are not derived from the imported geometry. Do not use these results for safety-critical design.</div>
+    </div>
+  </aside>
+</main>
+<footer>Built for GitHub Pages · Runs in your browser · Files are processed locally · Three.js is loaded from a public CDN</footer>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/STLLoader.js';
+import { OBJLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/OBJLoader.js';
+import { PLYLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/PLYLoader.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+
+const viewport=document.querySelector('#viewport');
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x0a111a,15,45);
+const camera=new THREE.PerspectiveCamera(48,1,.1,150);camera.position.set(5,4.1,7);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(viewport.clientWidth,viewport.clientHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;viewport.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,0,0);
+scene.add(new THREE.HemisphereLight(0xa9d8ff,0x18202d,2.0));
+const keyLight=new THREE.DirectionalLight(0xffffff,3);keyLight.position.set(4,7,5);scene.add(keyLight);
+const rimLight=new THREE.DirectionalLight(0x43dced,2);rimLight.position.set(-5,2,-4);scene.add(rimLight);
+const grid=new THREE.GridHelper(16,32,0x2c5970,0x1b3042);grid.position.y=-1.15;scene.add(grid);
+const axes=new THREE.AxesHelper(1.1);axes.position.set(-3.7,-1.12,-3.7);scene.add(axes);
+const modelGroup=new THREE.Group();scene.add(modelGroup);
+let model=null, isRunning=true, showFlow=true, wireframe=false, particlePositions, particleGeom, particleMat, particles, lineGroup;
+const PARTICLES=900, BOUNDS={x:5.8,y:2.9,z:2.9};
+function makeDemo(){
+  clearModel();
+  const group=new THREE.Group();
+  const mat=new THREE.MeshStandardMaterial({color:0x9dbbd2,metalness:.72,roughness:.27});
+  const body=new THREE.Mesh(new THREE.SphereGeometry(1,64,40),mat);body.scale.set(2.25,.48,.62);group.add(body);
+  const nose=new THREE.Mesh(new THREE.ConeGeometry(.48,.95,48),mat);nose.rotation.z=-Math.PI/2;nose.position.x=2.35;group.add(nose);
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.38,.7,40),mat);tail.rotation.z=Math.PI/2;tail.position.x=-2.25;group.add(tail);
+  const wingMat=new THREE.MeshStandardMaterial({color:0x6888a6,metalness:.62,roughness:.32,side:THREE.DoubleSide});
+  const shape=new THREE.Shape();shape.moveTo(-1.35,-.34);shape.lineTo(.85,-.25);shape.lineTo(1.45,0);shape.lineTo(.6,.28);shape.lineTo(-1.25,.23);shape.closePath();
+  const geo=new THREE.ShapeGeometry(shape,2);const wing=new THREE.Mesh(geo,wingMat);wing.rotation.x=-Math.PI/2;wing.scale.set(1,1.45,1);wing.position.y=-.08;group.add(wing);
+  const fin=new THREE.Mesh(new THREE.BoxGeometry(.9,.035,.2),wingMat);fin.position.set(-1.45,.3,0);fin.rotation.z=.13;group.add(fin);
+  group.rotation.z=.035;
+  model=group;modelGroup.add(model);normalizeModel(model);document.querySelector('#modelName').textContent='Demo model loaded: streamlined test body';document.querySelector('#viewStatus').textContent='FLOW FIELD: ACTIVE · DEMO GEOMETRY';
+}
+function clearModel(){if(model){modelGroup.remove(model);model.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose();}});model=null;}}
+function normalizeModel(obj){
+  const box=new THREE.Box3().setFromObject(obj),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3());
+  const max=Math.max(size.x,size.y,size.z)||1;obj.position.sub(center);obj.scale.multiplyScalar(4.1/max);
+  obj.updateMatrixWorld(true);camera.position.set(5,3.6,6);controls.target.set(0,0,0);controls.update();
+}
+function makeFlow(){
+  if(particles){scene.remove(particles);particleGeom.dispose();particleMat.dispose();}
+  if(lineGroup){scene.remove(lineGroup);lineGroup.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});}
+  particlePositions=new Float32Array(PARTICLES*3);
+  for(let i=0;i<PARTICLES;i++){particlePositions[i*3]=(Math.random()-.5)*BOUNDS.x*2;particlePositions[i*3+1]=(Math.random()-.5)*BOUNDS.y*2;particlePositions[i*3+2]=(Math.random()-.5)*BOUNDS.z*2;}
+  particleGeom=new THREE.BufferGeometry();particleGeom.setAttribute('position',new THREE.BufferAttribute(particlePositions,3));
+  particleMat=new THREE.PointsMaterial({color:0x5fddec,size:.035,transparent:true,opacity:.78,sizeAttenuation:true,depthWrite:false});
+  particles=new THREE.Points(particleGeom,particleMat);scene.add(particles);
+  lineGroup=new THREE.Group();
+  const colors=[0x3c78d8,0x4b9ee8,0x58c9e8,0x72e8e8,0x55a9e8];
+  for(let j=0;j<35;j++){
+    const pts=[];const y=-1.6+j*(3.2/34),z=-1.75+Math.random()*3.5;
+    for(let k=0;k<=55;k++){const x=-5.4+k*.2;const influence=Math.exp(-Math.pow((x+0.1)/1.8,2));const bend=Math.sin((x+1)*.72)*.1;pts.push(new THREE.Vector3(x,y+bend+Math.sign(y||1)*influence*.28,z+Math.sin(x*.55+j)*.045));}
+    const g=new THREE.BufferGeometry().setFromPoints(pts);const m=new THREE.LineBasicMaterial({color:colors[j%colors.length],transparent:true,opacity:.45});lineGroup.add(new THREE.Line(g,m));
+  }
+  scene.add(lineGroup);lineGroup.visible=showFlow;particles.visible=showFlow;
+}
+function updateFlow(dt){
+ if(!particles||!isRunning||!showFlow)return;
+ const wind=Number(document.querySelector('#wind').value),angle=Number(document.querySelector('#angle').value)*Math.PI/180;
+ const pos=particleGeom.attributes.position.array;
+ for(let i=0;i<PARTICLES;i++){
+  let x=pos[i*3],y=pos[i*3+1],z=pos[i*3+2];
+  x+=dt*(1.1+wind/35);
+  const wake=Math.exp(-Math.pow((x-.1)/1.6,2));
+  y+=dt*(Math.sin(x*1.2+z)*.12 + Math.sin(angle)*wake*.75);
+  z+=dt*Math.cos(x*.9+y)*.045;
+  if(x>BOUNDS.x){x=-BOUNDS.x;y=(Math.random()-.5)*BOUNDS.y*2;z=(Math.random()-.5)*BOUNDS.z*2;}
+  if(y>BOUNDS.y)y=-BOUNDS.y;if(y< -BOUNDS.y)y=BOUNDS.y;
+  if(z>BOUNDS.z)z=-BOUNDS.z;if(z< -BOUNDS.z)z=BOUNDS.z;
+  pos[i*3]=x;pos[i*3+1]=y;pos[i*3+2]=z;
+ }
+ particleGeom.attributes.position.needsUpdate=true;
+}
+function val(id){return Number(document.getElementById(id).value)}
+function updateMetrics(){
+ const v=val('wind'),rho=val('density'),area=val('area'),cd=val('cd'),cl=val('cl'),angle=val('angle');
+ const q=.5*rho*v*v,drag=q*cd*area,lift=q*cl*area,re=rho*v*4.1/1.81e-5;
+ document.querySelector('#windOut').textContent=v+' m/s';document.querySelector('#angleOut').textContent=angle+'°';document.querySelector('#densityOut').textContent=rho.toFixed(3)+' kg/m³';document.querySelector('#areaOut').textContent=area.toFixed(1)+' m²';document.querySelector('#cdOut').textContent=cd.toFixed(2);document.querySelector('#clOut').textContent=cl.toFixed(2);
+ document.querySelector('#qOut').textContent=q.toLocaleString('en-US',{maximumFractionDigits:1});document.querySelector('#dragOut').textContent=drag.toLocaleString('en-US',{maximumFractionDigits:1});document.querySelector('#liftOut').textContent=lift.toLocaleString('en-US',{maximumFractionDigits:1});document.querySelector('#reOut').textContent=re>=1e6?(re/1e6).toFixed(2)+'M':Math.round(re/1000)+'K';
+ document.querySelector('#flowSpeedLabel').textContent=v+' m/s';document.querySelector('#angleBarLabel').textContent=angle+'°';document.querySelector('#areaBarLabel').textContent=area.toFixed(1)+' m²';document.querySelector('#speedBar').style.width=v+'%';document.querySelector('#angleBar').style.width=((angle+10)/35*100)+'%';document.querySelector('#areaBar').style.width=(area/5*100)+'%';
+}
+['wind','angle','density','area','cd','cl'].forEach(id=>document.getElementById(id).addEventListener('input',updateMetrics));
+document.querySelector('#runBtn').addEventListener('click',()=>{isRunning=true;document.querySelector('#simStatus').textContent='● FLOW VISUALIZATION RUNNING';});
+document.querySelector('#pauseBtn').addEventListener('click',()=>{isRunning=false;document.querySelector('#simStatus').textContent='Ⅱ FLOW VISUALIZATION PAUSED';});
+document.querySelector('#reseedBtn').addEventListener('click',makeFlow);
+document.querySelector('#demoBtn').addEventListener('click',()=>{makeDemo();makeFlow();});
+document.querySelector('#resetView').addEventListener('click',()=>{camera.position.set(5,4.1,7);controls.target.set(0,0,0);controls.update();});
+document.querySelector('#flowBtn').addEventListener('click',()=>{showFlow=!showFlow;particles.visible=showFlow;lineGroup.visible=showFlow;document.querySelector('#flowBtn').textContent=showFlow?'Hide flow':'Show flow';});
+document.querySelector('#wireBtn').addEventListener('click',()=>{wireframe=!wireframe;if(model)model.traverse(o=>{if(o.isMesh){const mats=Array.isArray(o.material)?o.material:[o.material];mats.forEach(m=>{m.wireframe=wireframe;});}});document.querySelector('#wireBtn').textContent=wireframe?'Solid view':'Wireframe';});
+async function importFile(file){
+ if(!file)return;const ext=file.name.split('.').pop().toLowerCase();let obj;
+ try{
+  if(ext==='glb'||ext==='gltf'){
+   const url=URL.createObjectURL(file);
+   try{const gltf=await new GLTFLoader().loadAsync(url);obj=gltf.scene;}finally{URL.revokeObjectURL(url);}
+  }else{
+   const text=await file.text();
+   if(ext==='stl'){const geo=new STLLoader().parse(await file.arrayBuffer());geo.computeVertexNormals();obj=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x9dbbd2,metalness:.35,roughness:.4,side:THREE.DoubleSide}));}
+   else if(ext==='obj'){obj=new OBJLoader().parse(text);obj.traverse(o=>{if(o.isMesh&&!o.material)o.material=new THREE.MeshStandardMaterial({color:0x9dbbd2,metalness:.25,roughness:.5,side:THREE.DoubleSide});});}
+   else if(ext==='ply'){const geo=new PLYLoader().parse(await file.arrayBuffer());geo.computeVertexNormals();obj=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:0x9dbbd2,metalness:.25,roughness:.5,side:THREE.DoubleSide}));}
+   else throw new Error('Unsupported file type. Please use GLB, glTF, OBJ, STL, or PLY.');
+  }
+  clearModel();model=obj;modelGroup.add(model);normalizeModel(model);document.querySelector('#modelName').textContent='Imported: '+file.name;document.querySelector('#viewStatus').textContent='FLOW FIELD: ACTIVE · IMPORTED GEOMETRY';makeFlow();
+ }catch(err){alert('Could not load this model: '+err.message);}
+}
+const fileInput=document.querySelector('#fileInput'),drop=document.querySelector('#drop'),viewportDrop=document.querySelector('#viewportDrop');
+fileInput.addEventListener('change',e=>importFile(e.target.files[0]));
+for(const el of [drop,viewport]){
+ el.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag');viewportDrop.classList.add('show');});
+ el.addEventListener('dragleave',e=>{if(!el.contains(e.relatedTarget)){drop.classList.remove('drag');viewportDrop.classList.remove('show');}});
+ el.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('drag');viewportDrop.classList.remove('show');importFile(e.dataTransfer.files[0]);});
+}
+window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('drop',e=>e.preventDefault());
+function resize(){const w=viewport.clientWidth,h=viewport.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);}
+new ResizeObserver(resize).observe(viewport);
+let last=performance.now();
+function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;controls.update();updateFlow(dt);renderer.render(scene,camera);}
+makeDemo();makeFlow();updateMetrics();animate(performance.now());
+</script>
+</body>
+</html>
